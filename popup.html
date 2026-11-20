@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>GCP JSON 自动生成与归档工具</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+      background: #f8fafd;
+      color: #202124;
+      padding: 14px;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a73e8, #681da8);
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+    }
+    .header-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .version-badge {
+      background: rgba(255, 255, 255, 0.22);
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .header-sub {
+      font-size: 11px;
+      opacity: 0.92;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #dadce0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a73e8;
+      margin-bottom: 8px;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 7px;
+      border: 1px solid #dadce0;
+      background: #fff;
+      color: #202124;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      margin-bottom: 7px;
+    }
+    .btn:last-child {
+      margin-bottom: 0;
+    }
+    .btn:hover {
+      background: #f1f3f4;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #1a73e8, #1557b0);
+      color: #fff;
+      border: none;
+    }
+    .btn-primary:hover {
+      opacity: 0.94;
+      background: linear-gradient(135deg, #1765cc, #124a96);
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .grid-2 .btn {
+      margin-bottom: 0;
+      font-size: 11px;
+      padding: 7px 6px;
+    }
+    .tips {
+      font-size: 11px;
+      color: #5f6368;
+      line-height: 1.5;
+    }
+    .tips strong {
+      color: #202124;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <span>🔐 GCP JSON 全自动工具</span>
+      <span class="version-badge">v3.3.0</span>
+    </div>
+    <div class="header-sub">
+      支持【低配服务账号】与【高级 OAuth 公开客户端】一键生成并按组归档至私密 Google 表格
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🚀 快速前往 Google Cloud 控制台</div>
+    <button type="button" class="btn btn-primary" id="openConsoleBtn">
+      ⚡ 打开 Google Cloud Console 主页
+    </button>
+    <div class="grid-2">
+      <button type="button" class="btn" data-url="https://console.cloud.google.com/projectcreate">
+        ➕ 新建 GCP 项目
+      </button>
+      <button type="button" class="btn" data-url="https://console.cloud.google.com/auth/overview">
+        🟣 OAuth 平台
+      </button>
+      <button type="button" class="btn" data-url="https://console.cloud.google.com/iam-admin/serviceaccounts">
+        🟢 服务账号列表
+      </button>
+      <button type="button" class="btn" data-url="https://console.cloud.google.com/apis/dashboard">
+        🔌 API 控制台
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💡 使用说明</div>
+    <div class="tips">
+      1. 进入 <strong>console.cloud.google.com</strong> 后，页面右上角会自动显示悬浮控制面板。<br/>
+      2. 首次使用请点击面板右上角 <strong>“⚙️ 接口设置”</strong> 填入您的 Google 表格 Web App URL。<br/>
+      3. 选择组别与配置规格（低配 / 高级 / 全套），点击一键生成即可自动完成并归档。
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

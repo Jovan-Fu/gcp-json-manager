@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCP 服务账号 JSON 按组下载中心（独立极速版）</title>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-hover: #1557b0;
+      --success: #0f9d58;
+      --bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-main: #202124;
+      --text-sub: #5f6368;
+      --border: #dadce0;
+      --danger: #d93025;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-group {
+      background: #e8f0fe;
+      color: var(--primary);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .login-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 64px);
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 450px;
+      border-radius: 14px;
+      padding: 34px 30px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--text-sub);
+      text-align: center;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #3c4043;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-decoration: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #0b8043;
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: #f1f3f4;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    .error-msg {
+      background: #fce8e6;
+      color: var(--danger);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .main-container {
+      max-width: 1240px;
+      margin: 24px auto;
+      padding: 0 20px 40px;
+      display: none;
+    }
+
+    .toolbar {
+      background: #fff;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-input {
+      max-width: 340px;
+      width: 100%;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+    }
+
+    .json-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+      gap: 16px;
+    }
+
+    .json-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .json-card:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed #e8eaed;
+    }
+
+    .account-email {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      word-break: break-all;
+    }
+
+    .gen-date {
+      font-size: 12px;
+      color: var(--text-sub);
+      white-space: nowrap;
+      background: #f1f3f4;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      margin-bottom: 8px;
+      color: #3c4043;
+    }
+
+    .info-label {
+      color: var(--text-sub);
+      width: 78px;
+      flex-shrink: 0;
+    }
+
+    .info-value {
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .service-email-box {
+      background: #f8fafd;
+      border: 1px solid #d2e3fc;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 10px 0 14px;
+    }
+
+    .service-email-title {
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .service-email-text {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      color: #174ea6;
+      word-break: break-all;
+      line-height: 1.4;
+      user-select: all;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f3f4;
+    }
+
+    .empty-state {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--text-sub);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 200;
+    }
+
+    .modal-box {
+      background: #fff;
+      width: 100%;
+      max-width: 680px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+    }
+
+    .modal-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 16px 20px;
+      overflow-y: auto;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #202124;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 300;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="navbar-brand">
+      <span>🔐 GCP 服务账号 JSON 按组下载中心</span>
+    </div>
+    <div class="navbar-actions" id="navActions" style="display: none;">
+      <span class="badge-group" id="currentGroupBadge">当前组别：-</span>
+      <button class="btn btn-outline btn-sm" onclick="refreshCurrentGroup()">🔄 刷新本组数据</button>
+      <button class="btn btn-outline btn-sm" onclick="logoutGroup()">🚪 切换组别/退出</button>
+    </div>
+  </header>
+
+  <!-- 1. 登录验证框 -->
+  <div class="login-wrapper" id="loginView">
+    <div class="login-card">
+      <h1 class="login-title">按组查看与下载 JSON</h1>
+      <p class="login-subtitle">
+        请输入您所在的<strong>组别名称</strong>与<strong>访问密码</strong>。<br/>
+        验证通过后，仅呈现该组别的 JSON 密钥与服务账号邮箱。
+      </p>
+
+      <div class="error-msg" id="loginError"></div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">组别名称 *</label>
+          <input type="text" id="groupNameInput" class="form-input" placeholder="例如：英语、一组" required autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">访问密码 * (请输入该组的独立访问密码)</label>
+          <input type="password" id="passwordInput" class="form-input" placeholder="请输入管理员分配的独立访问密码" required autocomplete="current-password" />
+        </div>
+
+        <div class="form-group" id="customApiBox">
+          <label class="form-label">
+            <span>Google 表格接口地址 (仅限官方 script.google.com) *</span>
+            <span style="font-size:11px;color:#1a73e8;font-weight:normal;">填一次自动记住</span>
+          </label>
+          <input type="url" id="customApiUrlInput" class="form-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">🔓 验证并查看本组 JSON</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. 列表视图 -->
+  <div class="main-container" id="listView">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <select id="levelFilterSelect" class="search-input" style="max-width: 175px; font-weight: 600;" onchange="renderFilteredCards()">
+          <option value="ALL">📦 全部规格 (低配+高级)</option>
+          <option value="HIGH">🟣 只看【高级】OAuth</option>
+          <option value="LOW">🟢 只看【低配】服务号</option>
+        </select>
+        <select id="dlFilterSelect" class="search-input" style="max-width: 165px; font-weight: 600;" onchange="renderFilteredCards()">
+          <option value="ALL">📥 全部下载状态</option>
+          <option value="UNUSED">✨ 未下载过 (0次)</option>
+          <option value="USED">✅ 已下载过 (≥1次)</option>
+        </select>
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="🔍 搜索谷歌账号、账号人、注册人、标识..."
+          oninput="renderFilteredCards()"
+        />
+        <span style="font-size: 13px; color: var(--text-sub);" id="countText">共 0 个 JSON 文件</span>
+      </div>
+      <div>
+        <button class="btn btn-outline btn-sm" onclick="downloadAllVisible()">📦 批量下载本组当前列表</button>
+      </div>
+    </div>
+
+    <div id="jsonListContainer" class="json-grid"></div>
+  </div>
+
+  <!-- 预览弹窗 -->
+  <div class="modal-backdrop" id="previewModal" onclick="if(event.target===this)closePreview()">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span id="previewTitle">JSON 密钥内容预览</span>
+        <button class="btn btn-outline btn-sm" onclick="closePreview()">✕ 关闭</button>
+      </div>
+      <div class="modal-body" id="previewContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" onclick="copyPreviewContent()">📋 复制 JSON 内容</button>
+        <button class="btn btn-success btn-sm" id="previewDownloadBtn">⬇️ 下载此 JSON 文件</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toastBox"></div>
+
+  <script>
+    // =========================================================================
+    // 💡 提示：你可以把你的 https://script.google.com/macros/s/AKfycb.../exec 网址
+    // 填在下方引号里保存，这样把这个 HTML 文件发给组员时，组员连接口网址都不用填！
+    // =========================================================================
+    const DEFAULT_GAS_WEB_APP_URL = '';
+
+    let currentGroup = '';
+    let currentPassword = '';
+    let allGroupItems = [];
+    let currentPreviewItem = null;
+
+    const isGasEnv = (typeof google !== 'undefined' && google.script && google.script.run);
+
+    // 严格校验接口地址：仅允许官方 https://script.google.com/macros/s/<ID>/exec，彻底阻断钓鱼参数诱导窃取密码
+    function isValidGasExecUrl(rawUrl) {
+      try {
+        const u = new URL(String(rawUrl || '').trim());
+        if (u.protocol !== 'https:' || u.hostname !== 'script.google.com') return false;
+        return /^\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(u.pathname) && !u.search && !u.hash;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const apiInput = document.getElementById('customApiUrlInput');
+
+      if (isGasEnv) {
+        document.getElementById('customApiBox').style.display = 'none';
+      } else {
+        // 禁止从 URL 参数 (?api=...) 读取接口地址，防止诱导链接将密码发往第三方服务器
+        const candidateUrl = (DEFAULT_GAS_WEB_APP_URL || localStorage.getItem('GCP_JSON_GAS_URL') || '').trim();
+        const safeApi = isValidGasExecUrl(candidateUrl) ? candidateUrl : '';
+        apiInput.value = safeApi;
+        if (isValidGasExecUrl(DEFAULT_GAS_WEB_APP_URL)) {
+          document.getElementById('customApiBox').style.display = 'none';
+        }
+      }
+
+      const savedGroup = localStorage.getItem('LAST_GROUP_NAME') || '';
+      if (savedGroup) {
+        document.getElementById('groupNameInput').value = savedGroup;
+      }
+    });
+
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      box.textContent = msg;
+      box.style.display = 'block';
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        box.style.display = 'none';
+      }, 2600);
+    }
+
+    function showError(msg) {
+      const errEl = document.getElementById('loginError');
+      if (!msg) {
+        errEl.style.display = 'none';
+        errEl.textContent = '';
+      } else {
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      showError('');
+
+      const groupName = document.getElementById('groupNameInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
+
+      if (!groupName || !password) {
+        showError('请完整输入组别名称和访问密码！');
+        return;
+      }
+
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ 正在安全验证并加载本组 JSON...';
+
+      queryBackend(groupName, password, (res) => {
+        btn.disabled = false;
+        btn.textContent = '🔓 验证并查看本组 JSON';
+
+        if (!res || !res.ok) {
+          showError((res && res.message) ? res.message : '验证失败，请检查组别或密码！');
+          return;
+        }
+
+        currentGroup = res.groupName;
+        currentPassword = password;
+        allGroupItems = res.items || [];
+        localStorage.setItem('LAST_GROUP_NAME', currentGroup);
+
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('listView').style.display = 'block';
+        document.getElementById('navActions').style.display = 'flex';
+        document.getElementById('currentGroupBadge').textContent = '当前组别：' + currentGroup;
+
+        renderFilteredCards();
+      });
+    }
+
+    function queryBackend(groupName, password, callback) {
+      if (isGasEnv) {
+        google.script.run
+          .withSuccessHandler(callback)
+          .withFailureHandler((err) => {
+            callback({ ok: false, message: '请求异常：' + (err.message || err) });
+          })
+          .verifyAndGetGroupJson(groupName, password);
+      } else {
+        const apiUrl = (DEFAULT_GAS_WEB_APP_URL || document.getElementById('customApiUrlInput').value || '').trim();
+        if (!apiUrl) {
+          callback({ ok: false, message: '请填写您在谷歌插件里使用的那条 Web App URL（以 /exec 结尾）！' });
+          return;
+        }
+        if (!isValidGasExecUrl(apiUrl)) {
+          callback({
+            ok: false,
+            message: '安全拦截：接口地址必须是以 https://script.google.com/macros/s/.../exec 结尾的官方 Google Apps Script 网址，严禁使用第三方域名！'
+          });
+          return;
+        }
+        localStorage.setItem('GCP_JSON_GAS_URL', apiUrl);
+
+        fetch(apiUrl, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'queryGroup',
+            groupName: groupName,
+            password: password
+          })
+        })
+          .then(r => r.json())
+          .then(callback)
+          .catch(err => callback({ ok: false, message: '网络请求失败：' + err.message }));
+      }
+    }
+
+    function refreshCurrentGroup() {
+      if (!currentGroup || !currentPassword) return;
+      showToast('正在刷新本组数据...');
+      queryBackend(currentGroup, currentPassword, (res) => {
+        if (res && res.ok) {
+          allGroupItems = res.items || [];
+          renderFilteredCards();
+          showToast('刷新完成，共 ' + allGroupItems.length + ' 条记录');
+        } else {
+          showToast('刷新失败：' + (res ? res.message : '未知错误'));
+        }
+      });
+    }
+
+    function logoutGroup() {
+      currentGroup = '';
+      currentPassword = '';
+      allGroupItems = [];
+      document.getElementById('listView').style.display = 'none';
+      document.getElementById('navActions').style.display = 'none';
+      document.getElementById('loginView').style.display = 'flex';
+    }
+
+    function isHighOAuthItem(item) {
+      const content = String(item.jsonContent || '');
+      const emailOrId = String(item.clientEmail || '');
+      return (
+        content.includes('"installed"') ||
+        content.includes('"client_secret"') ||
+        emailOrId.includes('.apps.googleusercontent.com')
+      );
+    }
+
+    function getDownloadBadgeHtml(dlCount) {
+      const count = Math.max(0, Number(dlCount) || 0);
+      if (count === 0) {
+        return `<span style="background:#e8f0fe;color:#1967d2;border:1px solid #aecbfa;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">✨ 未下载 (0次)</span>`;
+      }
+      return `<span style="background:#fef7e0;color:#b06000;border:1px solid #fde293;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">📥 已下载 ${count} 次</span>`;
+    }
+
+    function filterItemsByCurrentToolbar() {
+      const keyword = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const levelFilter = (document.getElementById('levelFilterSelect') ? document.getElementById('levelFilterSelect').value : 'ALL');
+      const dlFilter = (document.getElementById('dlFilterSelect') ? document.getElementById('dlFilterSelect').value : 'ALL');
+
+      return allGroupItems.filter(item => {
+        const isHigh = isHighOAuthItem(item);
+        if (levelFilter === 'HIGH' && !isHigh) return false;
+        if (levelFilter === 'LOW' && isHigh) return false;
+
+        const dlCount = Math.max(0, Number(item.downloadCount) || 0);
+        if (dlFilter === 'UNUSED' && dlCount > 0) return false;
+        if (dlFilter === 'USED' && dlCount === 0) return false;
+
+        if (!keyword) return true;
+        const text = [
+          item.googleAccount,
+          item.accountOwner,
+          item.registrant,
+          item.clientEmail,
+          item.projectId,
+          item.genDate,
+          item.fileName
+        ].join(' ').toLowerCase();
+        return text.includes(keyword);
+      });
+    }
+
+    function renderFilteredCards() {
+      const container = document.getElementById('jsonListContainer');
+      container.innerHTML = '';
+
+      const filtered = filterItemsByCurrentToolbar();
+      const unusedTotal = allGroupItems.filter(it => (Number(it.downloadCount) || 0) === 0).length;
+
+      document.getElementById('countText').textContent =
+        `本组共 ${allGroupItems.length} 个（未下载 ${unusedTotal} 个，当前显示 ${filtered.length} 个）`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <p style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">暂无匹配的 JSON 文件</p>
+            <p style="font-size: 13px;">当前【${escapeHtml(currentGroup)}】下还没有符合该筛选条件的记录。</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'json-card';
+
+        const isHigh = isHighOAuthItem(item);
+        const levelPrefix = isHigh ? '【高配】' : '【低配】';
+        const levelBadgeHtml = isHigh
+          ? `<span style="background:#f3e8fd;color:#681da8;border:1px solid #d7aefb;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">🟣 【高配】OAuth 公开配置</span>`
+          : `<span style="background:#e6f4ea;color:#0b8043;border:1px solid #ceead6;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">🟢 【低配】服务账号配置</span>`;
+        const dlCount = Math.max(0, Number(item.downloadCount) || 0);
+        const dlBadgeHtml = getDownloadBadgeHtml(dlCount);
+        const itemKey = String(item.recordKey || item.privateKeyId || item.clientEmail || item.fileName || item.id || idx);
+
+        const rawProjId = String(item.projectId || '-').trim();
+        const displayProjId = (rawProjId.includes('高配') || rawProjId.includes('低配'))
+          ? rawProjId
+          : `${levelPrefix}${rawProjId}`;
+
+        const idTitle = isHigh ? '🆔 【高配】OAuth 客户端标识 (免分享表格)' : '🔑 【低配】服务账号邮箱 (分享表格权限用)';
+        const copyBtnLabel = isHigh ? '📋 复制ID' : '📋 复制邮箱';
+        const serviceEmail = item.clientEmail || '（未解析到标识）';
+
+        card.innerHTML = `
+          <div>
+            <div class="card-header">
+              <div>
+                <div style="margin-bottom:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                  ${levelBadgeHtml}
+                  <span data-dl-badge-key="${escapeHtml(itemKey)}">${dlBadgeHtml}</span>
+                </div>
+                <div class="account-email" title="生成此密钥的谷歌账号">📧 ${escapeHtml(item.googleAccount)}</div>
+              </div>
+              <span class="gen-date">🕒 ${escapeHtml(item.genDate)}</span>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">所属组别：</span>
+              <span class="info-value">${escapeHtml(item.groupName)}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">账号人：</span>
+              <span class="info-value">${escapeHtml(item.accountOwner || '-')}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">注册人：</span>
+              <span class="info-value">${escapeHtml(item.registrant || '-')}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">项目 ID：</span>
+              <span class="info-value" style="font-weight:700;color:${isHigh ? '#681da8' : '#0b8043'};">${escapeHtml(displayProjId)}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">下载次数：</span>
+              <span class="info-value" data-dl-text-key="${escapeHtml(itemKey)}" style="font-weight:700;color:${dlCount === 0 ? '#1967d2' : '#b06000'};">
+                ${dlCount} 次 ${dlCount === 0 ? '（全新未下载）' : ''}
+              </span>
+            </div>
+
+            <div class="service-email-box" style="${isHigh ? 'background:#faf5ff;border-color:#e9d2fd;' : ''}">
+              <div class="service-email-title" style="${isHigh ? 'color:#681da8;' : ''}">
+                <span>${idTitle}</span>
+                <button type="button" class="btn btn-outline btn-sm" style="padding:2px 8px;font-size:11px;" data-copy-email="${escapeHtml(item.clientEmail || '')}">
+                  ${copyBtnLabel}
+                </button>
+              </div>
+              <div class="service-email-text" style="${isHigh ? 'color:#51158c;' : ''}">${escapeHtml(serviceEmail)}</div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button type="button" class="btn btn-outline btn-sm" data-preview-idx="${idx}">👁️ 预览内容</button>
+            <button type="button" class="btn btn-success btn-sm" data-download-idx="${idx}">⬇️ 下载${isHigh ? '【高配】' : '【低配】'}JSON</button>
+          </div>
+        `;
+
+        card.querySelector('[data-copy-email]').addEventListener('click', () => {
+          if (!item.clientEmail) {
+            showToast('该条记录没有标识内容');
+            return;
+          }
+          const rawVal = String(item.clientEmail);
+          const cleanCopy = rawVal.includes('|') ? rawVal.split('|').pop().trim() : rawVal.replace(/^【[^】]+】/, '').trim();
+          copyText(cleanCopy, '✅ 已复制：' + cleanCopy);
+        });
+
+        card.querySelector('[data-preview-idx]').addEventListener('click', () => {
+          openPreview(item);
+        });
+
+        card.querySelector('[data-download-idx]').addEventListener('click', () => {
+          downloadJsonItem(item);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function updateItemDownloadCountUI(item, newCount) {
+      item.downloadCount = Math.max(0, Number(newCount) || 0);
+      const itemKey = String(item.recordKey || item.privateKeyId || item.clientEmail || item.fileName || item.id || '');
+      if (itemKey) {
+        document.querySelectorAll(`[data-dl-badge-key]`).forEach(el => {
+          if (el.getAttribute('data-dl-badge-key') === itemKey) {
+            el.innerHTML = getDownloadBadgeHtml(item.downloadCount);
+          }
+        });
+        document.querySelectorAll(`[data-dl-text-key]`).forEach(el => {
+          if (el.getAttribute('data-dl-text-key') === itemKey) {
+            el.style.color = item.downloadCount === 0 ? '#1967d2' : '#b06000';
+            el.textContent = `${item.downloadCount} 次 ${item.downloadCount === 0 ? '（全新未下载）' : ''}`;
+          }
+        });
+      }
+      const filtered = filterItemsByCurrentToolbar();
+      const unusedTotal = allGroupItems.filter(it => (Number(it.downloadCount) || 0) === 0).length;
+      document.getElementById('countText').textContent =
+        `本组共 ${allGroupItems.length} 个（未下载 ${unusedTotal} 个，当前显示 ${filtered.length} 个）`;
+    }
+
+    function recordDownloadOnBackend(item) {
+      if (!currentGroup || !currentPassword || !item) return;
+      const recordKey = String(item.recordKey || item.privateKeyId || item.clientEmail || item.fileName || item.id || '').trim();
+      if (!recordKey) return;
+
+      if (isGasEnv) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.ok && typeof res.downloadCount === 'number') {
+              updateItemDownloadCountUI(item, res.downloadCount);
+            }
+          })
+          .recordJsonDownload(currentGroup, currentPassword, recordKey);
+      } else {
+        const apiUrl = (DEFAULT_GAS_WEB_APP_URL || document.getElementById('customApiUrlInput').value || '').trim();
+        if (!isValidGasExecUrl(apiUrl)) return;
+        fetch(apiUrl, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'recordDownload',
+            groupName: currentGroup,
+            password: currentPassword,
+            recordKey: recordKey
+          })
+        })
+          .then(r => r.json())
+          .then((res) => {
+            if (res && res.ok && typeof res.downloadCount === 'number') {
+              updateItemDownloadCountUI(item, res.downloadCount);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    function downloadJsonItem(item) {
+      if (!item || !item.jsonContent) {
+        showToast('该记录的 JSON 内容为空！');
+        return;
+      }
+      const isHigh = isHighOAuthItem(item);
+      const levelPrefix = isHigh ? '【高配】' : '【低配】';
+      const rawName = item.fileName || `${item.groupName}_${item.googleAccount}.json`;
+      const finalFileName = (rawName.includes('高配') || rawName.includes('低配'))
+        ? rawName
+        : `${levelPrefix}${rawName}`;
+
+      const blob = new Blob([item.jsonContent], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = finalFileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 200);
+
+      const nextCount = (Number(item.downloadCount) || 0) + 1;
+      updateItemDownloadCountUI(item, nextCount);
+      recordDownloadOnBackend(item);
+
+      showToast(`⬇️ 已下载（累计 ${nextCount} 次）：` + a.download);
+    }
+
+    function downloadAllVisible() {
+      const filtered = filterItemsByCurrentToolbar();
+
+      if (filtered.length === 0) {
+        showToast('当前列表没有可下载的 JSON 文件');
+        return;
+      }
+
+      filtered.forEach((item, index) => {
+        setTimeout(() => {
+          downloadJsonItem(item);
+        }, index * 350);
+      });
+    }
+
+    function openPreview(item) {
+      currentPreviewItem = item;
+      document.getElementById('previewTitle').textContent = '预览：' + (item.fileName || item.googleAccount);
+      document.getElementById('previewContent').textContent = item.jsonContent || '';
+      document.getElementById('previewDownloadBtn').onclick = () => downloadJsonItem(item);
+      document.getElementById('previewModal').style.display = 'flex';
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').style.display = 'none';
+      currentPreviewItem = null;
+    }
+
+    function copyPreviewContent() {
+      if (!currentPreviewItem) return;
+      copyText(currentPreviewItem.jsonContent, '✅ 已复制完整 JSON 内容到剪贴板');
+    }
+
+    function copyText(text, successMsg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(successMsg);
+        }).catch(() => fallbackCopy(text, successMsg));
+      } else {
+        fallbackCopy(text, successMsg);
+      }
+    }
+
+    function fallbackCopy(text, successMsg) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(successMsg);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
